@@ -1,0 +1,269 @@
+# ML-Based Credit Scoring API – README
+
+FastAPI backend that serves a **CIBIL-like credit score**.  
+This README shows how to **install, run, and test** the `/api/credit/score` endpoint, plus ready-to-paste JSON bodies for **low / medium / high risk** scenarios.
+
+---
+
+## 1) Project layout
+
+```
+controller/
+  credit_controller.py        # business logic: load artifacts, score, post-process
+model/
+  cibil_model.py              # model wrapper/helpers
+  model.joblib                # serialized model (tracked via LFS or copied manually)
+  meta.json                   # metadata (feature order, clip bounds, etc.)
+  feature_cols.csv            # features order used by the model
+  model.txt                   # optional LightGBM text dump (human-readable)
+routes/
+  credit.py                   # FastAPI router for /api/credit
+schema/
+  main.py                     # FastAPI app (includes CORS, mounts routers)
+  credit.py                   # Pydantic request/response schemas
+requirements.txt
+```
+
+> If you’re versioning the repo, **ignore `__pycache__`** and (optionally) track model binaries via **Git LFS**.
+
+---
+
+## 2) Requirements
+
+- Python 3.10+ (recommended)
+- pip / venv (or Conda)
+- (Optional) Git LFS if you version `model.joblib`
+
+Install deps:
+
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+---
+
+## 3) Place model artifacts
+
+Put these files inside `model/`:
+
+- `model.joblib` (the serialized ensemble + calibration)
+- `meta.json`
+- `feature_cols.csv`
+- `model.txt` (optional, for audit)
+
+> If `model.joblib` is large and not in Git, copy it manually into `model/` before running.
+
+---
+
+## 4) Run the API
+
+```bash
+uvicorn schema.main:app --reload --port 8000
+```
+
+You should see something like:
+
+```
+Uvicorn running on http://127.0.0.1:8000
+```
+
+CORS is enabled for localhost by default (adjust in `schema/main.py` if needed).
+
+---
+
+## 5) Endpoint
+
+### POST `/api/credit/score`
+
+- **Purpose:** return a CIBIL-like score in range **[300, 900]**
+- **Body:** a JSON with the **core Tier-A features** (15 fields).  
+  Missing indicators are added internally; you don’t need to send them.
+- **Response:**
+  ```json
+  {
+    "score": 684.2,
+    "clip": [300.0, 900.0],
+    "features_used": ["..."]
+  }
+  ```
+
+### Request body schema (Tier-A, 15 fields)
+
+| Field | Type | What it means |
+|---|---|---|
+| `time_since_recent_deliquency` | number | Months since the most recent delinquency (higher is better) |
+| `num_times_delinquent` | number | Total historical delinquency count |
+| `max_delinquency_level` | number | Worst ever DPD bucket (e.g., 30/60/90) |
+| `num_times_30p_dpd` | number | Count of 30+ DPD incidents |
+| `num_times_60p_dpd` | number | Count of 60+ DPD incidents |
+| `enq_L3m` | number | Credit inquiries in last 3 months |
+| `enq_L6m` | number | Credit inquiries in last 6 months |
+| `enq_L12m` | number | Credit inquiries in last 12 months |
+| `time_since_recent_enq` | number | Months since most recent inquiry (higher is better) |
+| `CC_utilization` | number | Credit card utilization ratio (e.g., 0.35 = 35%) |
+| `PL_utilization` | number | Personal-loan utilization ratio |
+| `pct_currentBal_all_TL` | number | Current balance / limits across all TLs |
+| `max_unsec_exposure_inPct` | number | Max unsecured exposure as % of total |
+| `CC_Flag` | 0/1 | Has credit card |
+| `PL_Flag` | 0/1 | Has personal loan |
+
+> All values are numeric. Send `null` or omit if unknown; the API will impute and add missing-indicators.
+
+---
+
+## 6) Ready-to-use JSON test cases
+
+Below are **example payloads** you can paste into Postman/Insomnia/curl.
+
+### A) **High risk** (score ≈ low 600s or below)
+- Recent delinquencies, high utilization, many inquiries.
+
+```json
+{
+  "time_since_recent_deliquency": 1,
+  "num_times_delinquent": 6,
+  "max_delinquency_level": 90,
+  "num_times_30p_dpd": 4,
+  "num_times_60p_dpd": 2,
+  "enq_L3m": 4,
+  "enq_L6m": 7,
+  "enq_L12m": 10,
+  "time_since_recent_enq": 0,
+  "CC_utilization": 1.20,
+  "PL_utilization": 1.10,
+  "pct_currentBal_all_TL": 1.20,
+  "max_unsec_exposure_inPct": 1.80,
+  "CC_Flag": 1,
+  "PL_Flag": 1
+}
+```
+
+### B) **Medium risk** (mid/upper 600s)
+- Some past issues, moderate utilization, moderate inquiries.
+
+```json
+{
+  "time_since_recent_deliquency": 12,
+  "num_times_delinquent": 2,
+  "max_delinquency_level": 30,
+  "num_times_30p_dpd": 2,
+  "num_times_60p_dpd": 0,
+  "enq_L3m": 1,
+  "enq_L6m": 2,
+  "enq_L12m": 4,
+  "time_since_recent_enq": 2,
+  "CC_utilization": 0.45,
+  "PL_utilization": 0.30,
+  "pct_currentBal_all_TL": 0.55,
+  "max_unsec_exposure_inPct": 0.60,
+  "CC_Flag": 1,
+  "PL_Flag": 1
+}
+```
+
+### C) **Low risk** (≥ ~700, cleaner profile)
+- Clean repayment history, low utilization, few recent inquiries.
+
+```json
+{
+  "time_since_recent_deliquency": 60,
+  "num_times_delinquent": 0,
+  "max_delinquency_level": 0,
+  "num_times_30p_dpd": 0,
+  "num_times_60p_dpd": 0,
+  "enq_L3m": 0,
+  "enq_L6m": 0,
+  "enq_L12m": 1,
+  "time_since_recent_enq": 18,
+  "CC_utilization": 0.12,
+  "PL_utilization": 0.00,
+  "pct_currentBal_all_TL": 0.20,
+  "max_unsec_exposure_inPct": 0.25,
+  "CC_Flag": 1,
+  "PL_Flag": 0
+}
+```
+
+> Exact scores depend on your trained artifacts. These payloads exercise typical **Indian credit** patterns and should fall into the intended bands with the provided model.
+
+---
+
+## 7) Example calls
+
+**curl:**
+```bash
+curl -X POST "http://127.0.0.1:8000/api/credit/score" \
+  -H "Content-Type: application/json" \
+  -d '{ "time_since_recent_deliquency": 60, "num_times_delinquent": 0, "max_delinquency_level": 0,
+        "num_times_30p_dpd": 0, "num_times_60p_dpd": 0,
+        "enq_L3m": 0, "enq_L6m": 0, "enq_L12m": 1,
+        "time_since_recent_enq": 18,
+        "CC_utilization": 0.12, "PL_utilization": 0.00,
+        "pct_currentBal_all_TL": 0.20, "max_unsec_exposure_inPct": 0.25,
+        "CC_Flag": 1, "PL_Flag": 0 }'
+```
+
+**Postman:**  
+- Method: `POST`  
+- URL: `http://127.0.0.1:8000/api/credit/score`  
+- Body → raw → JSON → paste one of the payloads above.
+
+---
+
+## 8) Typical responses
+
+```json
+{
+  "score": 708.9,
+  "clip": [300.0, 900.0],
+  "features_used": [
+    "time_since_recent_deliquency",
+    "num_times_delinquent",
+    "max_delinquency_level",
+    "num_times_30p_dpd",
+    "num_times_60p_dpd",
+    "enq_L3m",
+    "enq_L6m",
+    "enq_L12m",
+    "time_since_recent_enq",
+    "CC_utilization",
+    "PL_utilization",
+    "pct_currentBal_all_TL",
+    "max_unsec_exposure_inPct",
+    "CC_Flag",
+    "PL_Flag",
+    "max_delinquency_level_missing",
+    "time_since_recent_deliquency_missing",
+    "enq_L12m_missing",
+    "enq_L6m_missing",
+    "PL_utilization_missing",
+    "pct_currentBal_all_TL_missing",
+    "max_unsec_exposure_inPct_missing",
+    "CC_utilization_missing",
+    "time_since_recent_enq_missing",
+    "enq_L3m_missing"
+  ]
+}
+```
+
+> `features_used` may include internally added “*_missing” flags; you don’t need to send them.
+
+---
+
+## 9) Troubleshooting
+
+- **500 error: “model not found”** → Ensure `model/model.joblib` exists and the app has read access.
+- **Shape/feature mismatch** → `feature_cols.csv` in `model/` must match the model’s training order.
+- **Strange scores** → Check your input units (ratios like `CC_utilization` should be `0.0–1.0`) and recent inquiry/delinquency counters.
+
+---
+
+## 10) Next steps
+
+- Add `/api/loan/score` once your loan pipeline joblib and a small `loan_model.py` shim are ready (we’ll mirror the same structure).
+- Add Dockerfile and CI later if you want one-click deploys.
