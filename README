@@ -1,4 +1,4 @@
-# ML-Based Credit Scoring API – README
+# ML-Based Credit Scoring API
 
 FastAPI backend that serves a **CIBIL-like credit score**.  
 This README shows how to **install, run, and test** the `/api/credit/score` endpoint, plus ready-to-paste JSON bodies for **low / medium / high risk** scenarios.
