@@ -1,3 +1,4 @@
 # Ignore Python bytecode cache folders everywhere
 __pycache__/
 **/__pycache__/
+.env
