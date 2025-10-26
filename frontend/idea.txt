@@ -1,0 +1,57 @@
+So the app works as a normal upi/expense app 
+you can make payments through it which will be recorded 
+and analyzed... keeping track and other normal finance tracking 
+app features
+
+EXPENSE TRACKING 
+periods - this year, this month, this week, today
+transaction categories - food, entertainment, 
+transactions stats - graphs of expenses over selected time period
+transation objecty - {
+    category,
+    description, 
+    amount,
+    money saved, 
+}
+
+MICRO-SAVING 
+on each transaction, the app will give the user the option to 
+save some % of the transaction that will be stored in the app
+wallet. 
+the transaction will be the og amt + % of og amt to be saved
+
+GAME-THEORY
+tracking carbon footprint generated and giving user options to 
+offset the footprint by various methods - ...
+rewarding the user when he does such a thing
+
+Transaction Categories (Comprehensive List)
+Essentials
+    Groceries
+    Rent & Utilities (Electricity, Water, Gas, Internet)
+    Healthcare & Insurance
+    Transportation (Public Transit, Fuel, Car Maintenance)
+    Education & Learning (Courses, Books, Tuition Fees)
+Lifestyle
+    Dining Out
+    Entertainment (Movies, Streaming, Gaming)
+    Shopping (Clothing, Electronics, Accessories)
+    Fitness & Wellness (Gym, Yoga, Personal Training)
+Investments & Savings
+    Stocks & Bonds
+    Fixed Deposits
+    Mutual Funds
+    Emergency Fund Contributions
+Personal Finance & Miscellaneous
+    Loan Payments (Credit Card, Student Loan, Car Loan, Home Loan)
+    Travel & Vacation
+    Subscriptions & Memberships
+    Gifts & Charity
+    Business Expenses
+
+-> Transport -> CAR
+-> Food -> UTENSILS
+-> Shopping -> CART
+-> Household -> HOUSE
+-> Personal Care -> HEART
+-> Entertainment -> CONSOLE
