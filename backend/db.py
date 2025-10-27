@@ -9,17 +9,27 @@ DB_NAME = os.getenv("MONGODB_DB", "credit_scoring")
 COLL_NAME = os.getenv("MONGODB_COLLECTION", "cred.ly")
 
 _client: MongoClient | None = None
+_db = None
 _coll = None
 
+
+# ---------- Connection setup ----------
 def connect_mongo() -> None:
-    """Create a global client + collection and ping the server."""
-    global _client, _coll
+    """Create a global client + database + default collection, and ping the server."""
+    global _client, _db, _coll
     if not MONGODB_URI:
         raise RuntimeError("MONGODB_URI not set")
+
     _client = MongoClient(MONGODB_URI, uuidRepresentation="standard")
     _client.admin.command("ping")  # raises if connection fails
-    db = _client[DB_NAME]
-    _coll = db[COLL_NAME]
+
+    _db = _client[DB_NAME]
+    _coll = _db[COLL_NAME]
+
+    # ✅ ensure common indexes
+    _coll.create_index("mobile_number", unique=True)
+    _db["scenarios"].create_index("mobile_number")
+
 
 def close_mongo() -> None:
     global _client
@@ -27,19 +37,28 @@ def close_mongo() -> None:
         _client.close()
         _client = None
 
-def get_collection():
-    assert _coll is not None, "Mongo not connected. Call connect_mongo() on startup."
+
+# ---------- Collection getters ----------
+def get_collection(name: str = None):
+    """
+    Return a Mongo collection.
+    If name is None, return the default main collection (cred.ly).
+    """
+    assert _db is not None, "Mongo not connected. Call connect_mongo() on startup."
+
+    if name:
+        return _db[name]
     return _coll
 
 
-# db.py  (add at the bottom)
+# ---------- Seed data ----------
 def seed_bureau_data():
     coll = get_collection()
 
     dummy_records = [
         {
             "mobile_number": "9991112222",
-            "score": None,  # keep NULL
+            "score": None,
             "credit_limit": None,
             "credit_balance": None,
             "features": {

@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.credit import router as credit_router
 from db import connect_mongo, close_mongo, get_collection, seed_bureau_data
 from routes.onboard import router as onboard_router
+from routes.scenario import router as scenario_router
+
 
 
 app = FastAPI(title="CIBIL Scoring API")
@@ -19,6 +21,7 @@ app.add_middleware(
 # mount routes under /api
 app.include_router(credit_router, prefix="/api")
 app.include_router(onboard_router, prefix="/api")
+app.include_router(scenario_router, prefix="/api")
 
 @app.on_event("startup")
 def _startup():
