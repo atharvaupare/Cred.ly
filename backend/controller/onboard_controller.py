@@ -1,14 +1,15 @@
-# controller/onboard_controller.py
 from fastapi import HTTPException
 from typing import Any, Dict
-import requests
+import requests, bcrypt, jwt, os
+from datetime import datetime, timedelta
 from db import get_collection
+
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "supersecretkey123456")
+JWT_ALGO = os.getenv("JWT_ALGORITHM", "HS256")
 
 # ---- Credit Limit Policy ----
 def recommend_limit(features: Dict[str, Any], income_monthly: float, predicted_score: float) -> int:
     s = predicted_score
-
-    # Base multiplier by score band (India realistic)
     if s < 600:
         multiple, cap = 1.0, 50_000
     elif s < 650:
@@ -20,11 +21,9 @@ def recommend_limit(features: Dict[str, Any], income_monthly: float, predicted_s
     elif s < 800:
         multiple, cap = 4.0, 400_000
     else:
-        multiple, cap = 5.0, 600_000  # exceptional profile
-
+        multiple, cap = 5.0, 600_000
     base = min(multiple * income_monthly, cap)
 
-    # Risk adjustments
     f = 1.0
     if features.get("num_times_60p_dpd", 0) > 0:
         f *= 0.6
@@ -32,30 +31,33 @@ def recommend_limit(features: Dict[str, Any], income_monthly: float, predicted_s
         f *= 0.75
     elif features.get("num_times_delinquent", 0) > 0:
         f *= 0.85
-
     if features.get("enq_L3m", 0) >= 2:
         f *= 0.8
     elif features.get("enq_L6m", 0) >= 3 or features.get("enq_L12m", 0) >= 5:
         f *= 0.85
-
     if features.get("max_unsec_exposure_inPct", 0) > 0.50:
         f *= 0.8
     elif features.get("max_unsec_exposure_inPct", 0) > 0.35:
         f *= 0.9
-
     if features.get("pct_currentBal_all_TL", 0) > 0.60:
         f *= 0.85
     elif features.get("pct_currentBal_all_TL", 0) > 0.40:
         f *= 0.9
-
     f = max(0.5, min(f, 1.2))
     candidate = base * f
+    return int(round(candidate / 1000.0) * 1000)
 
-    return int(round(candidate / 1000.0) * 1000)  # nearest ₹1,000
-
+# ---- JWT helper ----
+def create_jwt_token(mobile_number: str) -> str:
+    payload = {
+        "sub": mobile_number,
+        "iat": datetime.utcnow()
+        # "exp": datetime.utcnow() + timedelta(days=1)  # expires in 24h
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
 
 # ---- Main onboarding logic ----
-def onboard_user_logic(mobile_number: str, income_monthly: float) -> Dict[str, Any]:
+def onboard_user_logic(mobile_number: str, income_monthly: float, password: str) -> Dict[str, Any]:
     coll = get_collection()
 
     # 1️⃣ Fetch record
@@ -88,21 +90,29 @@ def onboard_user_logic(mobile_number: str, income_monthly: float) -> Dict[str, A
     cc_util = float(features.get("CC_utilization", 0.0))
     balance = round(limit * cc_util, 2)
 
-    # 4️⃣ Update Mongo record
+    # 4️⃣ Secure password with bcrypt
+    hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    # 5️⃣ Update Mongo record
     update_fields = {
         "score": float(score),
         "credit_limit": limit,
         "credit_balance": balance,
-        "income_monthly": income_monthly
+        "income_monthly": income_monthly,
+        "password": hashed_pw
     }
     coll.update_one({"_id": doc["_id"]}, {"$set": update_fields})
 
-    # 5️⃣ Prepare response
+    # 6️⃣ Generate JWT token
+    token = create_jwt_token(mobile_number)
+
+    # 7️⃣ Response
     return {
         "mobile_number": mobile_number,
         "score": score,
         "credit_limit": limit,
         "credit_balance": balance,
         "cc_utilization": cc_util,
-        "message": "Bootstrap complete: score computed and record updated."
+        "token": token,
+        "message": "User onboarded successfully. Password secured and JWT issued."
     }
