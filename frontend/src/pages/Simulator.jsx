@@ -19,7 +19,7 @@ import {
   DialogActions,
   Button,
   TextField,
-  IconButton,
+  InputAdornment,
 } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -33,6 +33,25 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const formatINR = (value) =>
   "₹ " + Math.round(value ?? 0).toLocaleString("en-IN");
+
+// common slider styling (same look as affordability calculator)
+const sliderSx = {
+  "& .MuiSlider-track": {
+    border: "none",
+    height: 6,
+  },
+  "& .MuiSlider-rail": {
+    opacity: 0.25,
+    height: 6,
+  },
+  "& .MuiSlider-thumb": {
+    width: 16,
+    height: 16,
+    "&:hover, &.Mui-focusVisible, &.Mui-active": {
+      boxShadow: "0 0 0 6px rgba(37,99,235,0.18)",
+    },
+  },
+};
 
 // circular utilisation viz
 function UtilCircle({ label, value }) {
@@ -142,7 +161,7 @@ export default function Simulator() {
 
   // numeric text input change (clamped)
   const handleNumericChange = (name, min, max) => (e) => {
-    let value = Number(e.target.value.replace(/,/g, ""));
+    let value = Number(String(e.target.value).replace(/,/g, ""));
     if (Number.isNaN(value)) value = min;
     value = Math.max(min, Math.min(max, value));
 
@@ -190,7 +209,6 @@ export default function Simulator() {
       setShowResultModal(true); // auto-open modal when new result is ready
     } catch (err) {
       console.error(err);
-      // you can add toast / banner if needed
     } finally {
       setLoading(false);
     }
@@ -409,11 +427,47 @@ export default function Simulator() {
             </Typography>
           </Card>
 
-          {/* NEW LIMIT */}
-          <div className="space-y-2">
-            <Typography variant="body2" fontWeight={600}>
-              New Credit Limit
-            </Typography>
+          {/* NEW CREDIT LIMIT (card + slider + input) */}
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: 3,
+              p: 2,
+              borderColor: "grey.200",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontSize: 13, fontWeight: 600, color: "grey.700" }}
+              >
+                New Credit Limit
+              </Typography>
+              <TextField
+                size="small"
+                value={form.new_limit.toLocaleString("en-IN")}
+                onChange={handleNumericChange(
+                  "new_limit",
+                  currentLimit || 10000,
+                  currentLimit ? currentLimit * 2 : 400000
+                )}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">₹</InputAdornment>
+                  ),
+                  sx: { "& input": { textAlign: "right", fontSize: 12 } },
+                }}
+                sx={{ width: 140 }}
+              />
+            </Box>
+
             <Slider
               size="small"
               value={form.new_limit}
@@ -421,30 +475,64 @@ export default function Simulator() {
               max={currentLimit ? currentLimit * 2 : 400000}
               step={5000}
               onChange={handleSliderChange("new_limit")}
+              sx={sliderSx}
             />
-            <div className="flex justify-between text-[10px] text-gray-500">
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mt: 0.5,
+                color: "text.disabled",
+                fontSize: 10,
+              }}
+            >
               <span>{formatINR(currentLimit || 10000)}</span>
               <span>{formatINR(currentLimit ? currentLimit * 2 : 400000)}</span>
-            </div>
-            {/* numeric input */}
-            <TextField
-              size="small"
-              label="New limit (₹)"
-              value={form.new_limit.toLocaleString("en-IN")}
-              onChange={handleNumericChange(
-                "new_limit",
-                currentLimit || 10000,
-                currentLimit ? currentLimit * 2 : 400000
-              )}
-              InputProps={{ sx: { fontSize: 13 } }}
-            />
-          </div>
+            </Box>
+          </Card>
 
-          {/* NEW BALANCE */}
-          <div className="space-y-2">
-            <Typography variant="body2" fontWeight={600}>
-              New Credit Balance
-            </Typography>
+          {/* NEW CREDIT BALANCE (card + slider + input) */}
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: 3,
+              p: 2,
+              borderColor: "grey.200",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontSize: 13, fontWeight: 600, color: "grey.700" }}
+              >
+                New Credit Balance
+              </Typography>
+              <TextField
+                size="small"
+                value={form.new_balance.toLocaleString("en-IN")}
+                onChange={handleNumericChange(
+                  "new_balance",
+                  0,
+                  form.new_limit || 1
+                )}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">₹</InputAdornment>
+                  ),
+                  sx: { "& input": { textAlign: "right", fontSize: 12 } },
+                }}
+                sx={{ width: 140 }}
+              />
+            </Box>
+
             <Slider
               size="small"
               value={form.new_balance}
@@ -452,24 +540,22 @@ export default function Simulator() {
               max={form.new_limit || 1}
               step={2000}
               onChange={handleSliderChange("new_balance")}
+              sx={sliderSx}
             />
-            <div className="flex justify-between text-[10px] text-gray-500">
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mt: 0.5,
+                color: "text.disabled",
+                fontSize: 10,
+              }}
+            >
               <span>₹0</span>
               <span>{formatINR(form.new_limit)}</span>
-            </div>
-            {/* numeric input */}
-            <TextField
-              size="small"
-              label="New balance (₹)"
-              value={form.new_balance.toLocaleString("en-IN")}
-              onChange={handleNumericChange(
-                "new_balance",
-                0,
-                form.new_limit || 1
-              )}
-              InputProps={{ sx: { fontSize: 13 } }}
-            />
-          </div>
+            </Box>
+          </Card>
 
           {/* UTILISATION + CIRCLES */}
           <div className="space-y-2">
