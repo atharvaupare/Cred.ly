@@ -5,6 +5,8 @@ from routes.credit import router as credit_router
 from routes.onboard import router as onboard_router
 from routes.scenario import router as scenario_router
 from routes.user_profile import router as user_router
+from routes.login import router as login_router
+
 
 from db import connect_mongo, close_mongo, get_collection, seed_bureau_data
 from middleware.auth_middleware import AuthMiddleware
@@ -23,6 +25,7 @@ app.add_middleware(
 # --- Public routes ---
 app.include_router(credit_router, prefix="/api")
 app.include_router(onboard_router, prefix="/api")
+app.include_router(login_router, prefix="/api")
 
 # --- Protected sub-app ---
 from fastapi import FastAPI as SubApp
