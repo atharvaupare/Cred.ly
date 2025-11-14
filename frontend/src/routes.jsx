@@ -9,12 +9,16 @@ import AddExpense from "./pages/AddExpense";
 import QRAnimation from "./pages/QRAnimation";
 import TrxnFinish from "./components/TrxnFinish";
 import TrxnDetail from "./pages/TrxnDetail";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
 
 const routes = [
   {
     path: "/",
     element: <Landing />,
   },
+  { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
   {
     path: "/app",
     element: <Wrapper />,
