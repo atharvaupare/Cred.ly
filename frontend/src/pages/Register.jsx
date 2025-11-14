@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiPhone, FiLock, FiRefreshCcw, FiChevronLeft } from "react-icons/fi";
+import {
+  FiPhone,
+  FiLock,
+  FiRefreshCcw,
+  FiChevronLeft,
+  FiAlertCircle,
+  FiCheck,
+} from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 
 const Register = () => {
@@ -9,11 +16,15 @@ const Register = () => {
 
   const [step, setStep] = useState(1);
 
-  // Step values
+  // Input states
   const [mobile, setMobile] = useState("");
   const [income, setIncome] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const progressWidth = {
     1: "33%",
@@ -27,25 +38,98 @@ const Register = () => {
     exit: { opacity: 0, x: -80 },
   };
 
-  const handleSubmit = () => {
-    const data = {
-      mobile_number: mobile,
-      income_monthly: income,
-      password: password,
-    };
-
-    console.log("REGISTER DATA:", data);
-  };
-
   const inputClass =
     "w-full mt-2 px-4 py-3 pl-12 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 outline-none focus:ring-2 focus:ring-white/40";
 
   const iconClass =
     "absolute left-4 top-1/2 -translate-y-1/2 text-white/70 text-lg";
 
+  // ---------------------------------------------------------
+  // SUCCESS POPUP COMPONENT
+  // ---------------------------------------------------------
+  const SuccessPopup = () => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.7 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
+    >
+      <div className="bg-white text-blue-600 rounded-2xl p-6 shadow-xl flex flex-col items-center w-[85%] max-w-xs">
+        <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-3">
+          <FiCheck className="text-green-600 text-3xl" />
+        </div>
+
+        <h3 className="text-xl font-semibold mb-1">Account Created!</h3>
+        <p className="text-sm text-gray-600 text-center">
+          Your account has been successfully created. Please login to continue.
+        </p>
+
+        <button
+          onClick={() => navigate("/login")}
+          className="mt-4 w-full bg-blue-600 text-white rounded-xl py-2 font-semibold hover:bg-blue-700 transition"
+        >
+          Go to Login
+        </button>
+      </div>
+    </motion.div>
+  );
+
+  // ---------------------------------------------------------
+  // HANDLE SUBMIT
+  // ---------------------------------------------------------
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const res = await fetch("http://localhost:8000/api/onboard", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobile_number: mobile,
+          income_monthly: Number(income),
+          password: password,
+        }),
+      });
+
+      if (!res.ok) {
+        let payload = {};
+        try {
+          payload = await res.json();
+        } catch {
+          payload = {};
+        }
+        const msg =
+          payload.detail || payload.message || "Failed to create account.";
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      console.log("ONBOARD RESPONSE:", data);
+
+      // Show success popup
+      setSuccess(true);
+
+      // Auto navigate after delay
+      setTimeout(() => navigate("/login"), 5000);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ---------------------------------------------------------
+  // RETURN UI
+  // ---------------------------------------------------------
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-blue-600 to-blue-800 px-6 relative overflow-hidden">
-      {/* Glowing background */}
+      {/* Glow background */}
       <div
         className="absolute -top-36 -right-20 w-[22rem] h-[22rem] rounded-full blur-3xl opacity-30"
         style={{
@@ -69,10 +153,10 @@ const Register = () => {
           />
         </div>
 
-        {/* Steps */}
+        {/* Form Steps */}
         <div className="relative h-64">
           <AnimatePresence mode="wait">
-            {/* STEP 1 – Mobile Number */}
+            {/* STEP 1: Mobile */}
             {step === 1 && (
               <motion.div
                 key="step1"
@@ -84,10 +168,8 @@ const Register = () => {
                 className="absolute w-full"
               >
                 <label className="text-white/90 text-sm">Mobile Number</label>
-
                 <div className="relative">
                   <FiPhone className={iconClass} />
-
                   <input
                     type="text"
                     value={mobile}
@@ -118,7 +200,7 @@ const Register = () => {
               </motion.div>
             )}
 
-            {/* STEP 2 – Monthly Income */}
+            {/* STEP 2: Income */}
             {step === 2 && (
               <motion.div
                 key="step2"
@@ -132,10 +214,8 @@ const Register = () => {
                 <label className="text-white/90 text-sm">
                   Monthly Income (INR)
                 </label>
-
                 <div className="relative">
                   <FaRupeeSign className={iconClass} />
-
                   <input
                     type="number"
                     value={income}
@@ -169,7 +249,7 @@ const Register = () => {
               </motion.div>
             )}
 
-            {/* STEP 3 – Password */}
+            {/* STEP 3: Password */}
             {step === 3 && (
               <motion.div
                 key="step3"
@@ -180,12 +260,9 @@ const Register = () => {
                 transition={{ duration: 0.45, ease: "easeInOut" }}
                 className="absolute w-full"
               >
-                {/* Password */}
                 <label className="text-white/90 text-sm">Create Password</label>
-
                 <div className="relative">
                   <FiLock className={iconClass} />
-
                   <input
                     type="password"
                     value={password}
@@ -195,14 +272,11 @@ const Register = () => {
                   />
                 </div>
 
-                {/* Confirm Password */}
                 <label className="text-white/90 text-sm mt-4 block">
                   Confirm Password
                 </label>
-
                 <div className="relative">
                   <FiRefreshCcw className={iconClass} />
-
                   <input
                     type="password"
                     value={confirm}
@@ -212,30 +286,51 @@ const Register = () => {
                   />
                 </div>
 
-                <div className="flex justify-between mt-6">
-                  <button
-                    onClick={() => setStep(2)}
-                    className="flex items-center gap-2 py-2 px-4 text-white/80 border border-white/30 rounded-xl hover:bg-white/20 transition"
-                  >
-                    <FiChevronLeft /> Back
-                  </button>
+                <div className="flex flex-col gap-3 mt-6">
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => setStep(2)}
+                      className="flex items-center gap-2 py-2 px-4 text-white/80 border border-white/30 rounded-xl hover:bg-white/20 transition"
+                    >
+                      <FiChevronLeft /> Back
+                    </button>
 
-                  <button
-                    onClick={() => {
-                      if (password && confirm && password === confirm) {
-                        handleSubmit();
-                      }
-                    }}
-                    className={`py-2 px-6 rounded-xl font-bold shadow-md transition 
+                    <button
+                      onClick={() => {
+                        if (
+                          password &&
+                          confirm &&
+                          password === confirm &&
+                          !submitting
+                        ) {
+                          handleSubmit();
+                        }
+                      }}
+                      className={`py-2 px-6 rounded-xl font-bold shadow-md transition flex items-center justify-center
                         ${
-                          password && confirm && password === confirm
+                          password &&
+                          confirm &&
+                          password === confirm &&
+                          !submitting
                             ? "bg-white text-blue-600 hover:bg-blue-50"
                             : "bg-white/40 text-white/60 cursor-not-allowed"
                         }
-                    `}
-                  >
-                    Create Account
-                  </button>
+                      `}
+                    >
+                      {submitting ? (
+                        <span className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        "Create Account"
+                      )}
+                    </button>
+                  </div>
+
+                  {error && (
+                    <p className="text-red-300 text-sm flex items-center gap-2">
+                      <FiAlertCircle />
+                      {error}
+                    </p>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -253,6 +348,9 @@ const Register = () => {
           </span>
         </p>
       </div>
+
+      {/* SUCCESS POPUP */}
+      <AnimatePresence>{success && <SuccessPopup />}</AnimatePresence>
     </div>
   );
 };

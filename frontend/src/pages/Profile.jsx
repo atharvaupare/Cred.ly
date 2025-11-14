@@ -7,16 +7,29 @@ import {
   HiShieldCheck,
   HiLockClosed,
 } from "react-icons/hi";
+import { FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import profile from "../assets/profile.png";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
 
   const menuItems = [
-    { icon: <HiUser className="text-gray-600 text-2xl" />, label: "Account info" },
-    { icon: <HiUsers className="text-gray-600 text-2xl" />, label: "Personal profile" },
-    { icon: <HiMail className="text-gray-600 text-2xl" />, label: "Message center" },
+    {
+      icon: <HiUser className="text-gray-600 text-2xl" />,
+      label: "Account info",
+    },
+    {
+      icon: <HiUsers className="text-gray-600 text-2xl" />,
+      label: "Personal profile",
+    },
+    {
+      icon: <HiMail className="text-gray-600 text-2xl" />,
+      label: "Message center",
+    },
     {
       icon: <HiShieldCheck className="text-gray-600 text-2xl" />,
       label: "Login and security",
@@ -47,6 +60,7 @@ const Profile = () => {
           className="absolute mt-[9rem] size-[110px] rounded-full shadow-lg"
         />
       </div>
+
       <div className="w-screen bg-white mt-[230px] flex flex-col items-center">
         <div className="flex flex-col mt-12 items-center">
           <span className="text-xl font-semibold">Agney Komath</span>
@@ -64,6 +78,19 @@ const Profile = () => {
                 <span className="text-gray-800">{item.label}</span>
               </div>
             ))}
+
+            {/* LOGOUT BUTTON */}
+            <div
+              onClick={() => {
+                logout();
+                navigate("/login", { replace: true });
+              }}
+              className="flex items-center gap-4 py-3 px-4 mt-4 rounded-lg cursor-pointer
+                         text-red-600 font-semibold hover:bg-red-50 transition"
+            >
+              <FiLogOut className="text-2xl" />
+              <span>Logout</span>
+            </div>
           </div>
         </div>
       </div>
