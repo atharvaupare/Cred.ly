@@ -152,8 +152,9 @@ export default function Simulator() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        py: 4,
+        pt: 4,
         px: 1.5,
+        pb: 10,
       }}
     >
       <Container maxWidth="sm" sx={{ px: 0 }}>
@@ -553,7 +554,10 @@ export default function Simulator() {
 
           {/* Bottom section remains same as previous version: break-up + DTI pie + recommendation */}
 
-          <Grid spacing={2.5}>
+          <Grid
+            spacing={2.5}
+            sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
             {/* Break-up Card */}
             <Grid item xs={12} sm={7}>
               <Card

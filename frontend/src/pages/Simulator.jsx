@@ -348,7 +348,7 @@ export default function Simulator() {
 
       {/* MAIN PAGE */}
       <div
-        className="min-h-screen flex justify-center px-4 py-8"
+        className="min-h-screen flex justify-center px-4 pt-8 pb-20"
         style={{
           background: "linear-gradient(to bottom, #3b82f6, #1e40af)",
           overflowY: "auto",
