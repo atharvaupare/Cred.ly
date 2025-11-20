@@ -90,7 +90,7 @@ const ScenarioHistory = () => {
         )}
 
         {sorted.map((entry, idx) => {
-          const id = entry._id || entry.id || idx;
+          const id = scenarios.length - idx - 1;
           return (
             <Row
               key={id}
