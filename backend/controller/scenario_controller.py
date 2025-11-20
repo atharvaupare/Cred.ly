@@ -3,12 +3,10 @@ import os
 from typing import Dict, Any
 from openai import OpenAI
 from fastapi import HTTPException
-from db import get_collection
 from controller.credit_controller import score_one
 from schema.credit import CreditRequest
 from pydantic import BaseModel
 from datetime import datetime
-from pymongo import UpdateOne
 from db import get_collection
 
 class AdviceResponse(BaseModel):
@@ -16,7 +14,7 @@ class AdviceResponse(BaseModel):
     do_dont: str
     affordability: str
 
-client = OpenAI(api_key="whatsapp se lo")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # --------- Utility: apply toggles (in-memory only) ---------
 def apply_scenario_toggles(features: Dict[str, Any],

@@ -38,7 +38,8 @@ Install deps:
 
 ```bash
 python -m venv .venv
-# Windows: .venv\Scripts\activate
+# Windows: 
+.venv\Scripts\activate
 # macOS/Linux:
 source .venv/bin/activate
 
@@ -63,7 +64,7 @@ Put these files inside `model/`:
 ## 4) Run the API
 
 ```bash
-uvicorn schema.main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 ```
 
 You should see something like:

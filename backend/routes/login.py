@@ -3,10 +3,10 @@ from pydantic import BaseModel
 from db import get_collection
 import bcrypt, jwt
 from datetime import datetime
+import os
 
-# --- Hardcoded JWT for now ---
-JWT_SECRET = "supersecretkey123456"
-JWT_ALGO = "HS256"
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "supersecretkey123456")
+JWT_ALGO = os.getenv("JWT_ALGORITHM", "HS256")
 
 router = APIRouter(tags=["Login"])
 

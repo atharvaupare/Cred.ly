@@ -4,10 +4,7 @@ import os
 from openai import OpenAI
 from pydantic import BaseModel
 
-
-# TTODO: CHANGE THIS TO USE ENV VARIABLE INSTEAD OF HARDCODING
-client = OpenAI(api_key="whatsapp se lo")
-
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ----- Pydantic model for OpenAI structured output -----
 class ScoreResponse(BaseModel):

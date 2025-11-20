@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from typing import Any, Dict
 import requests, bcrypt, jwt, os
-from datetime import datetime, timedelta
+from datetime import datetime
 from db import get_collection
 
 JWT_SECRET = os.getenv("JWT_SECRET_KEY", "supersecretkey123456")
