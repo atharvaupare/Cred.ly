@@ -27,8 +27,10 @@ const Home = () => {
   }, [limit, balance]);
 
   const optimizerTip = useMemo(() => {
-    if (utilization <= 30) return "Great — keep utilisation below 30% to improve your score.";
-    if (utilization <= 50) return "You're OK — try reducing balances to get under 30% utilisation.";
+    if (utilization <= 30)
+      return "Great — keep utilisation below 30% to improve your score.";
+    if (utilization <= 50)
+      return "You're OK — try reducing balances to get under 30% utilisation.";
     return "High utilisation — paying down balances or increasing limit (carefully) will help your score.";
   }, [utilization]);
 
@@ -60,10 +62,16 @@ const Home = () => {
           className="w-full bg-[#2563EB] hover:bg-[#1E3A8A] text-white py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-between"
         >
           <div className="flex flex-col text-left">
-            <span className="text-lg font-semibold">Not sure how to improve your score?</span>
-            <span className="text-sm opacity-90">Try our What-If Simulator ⚡</span>
+            <span className="text-lg font-semibold">
+              Not sure how to improve your score?
+            </span>
+            <span className="text-sm opacity-90">
+              Try our What-If Simulator ⚡
+            </span>
           </div>
-          <span className="text-2xl">→</span>
+          <div className="w-10 h-10 bg-white justify-center items-center rounded-xl ">
+            <span className="text-2xl text-black">→</span>
+          </div>
         </button>
       </div>
     </div>
