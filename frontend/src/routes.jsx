@@ -6,6 +6,8 @@ import Profile from "./pages/Profile";
 import Loans from "./pages/Loans";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ScenarioHistory from "./pages/ScenarioHistory";
+import ScenarioDetail from "./pages/ScenarioDetail";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -26,6 +28,8 @@ const routes = [
       { path: "simulator", element: <Simulator /> },
       { path: "loans", element: <Loans /> },
       { path: "profile", element: <Profile /> },
+      { path: "scenarios", element: <ScenarioHistory /> },
+      { path: "scenario/:id", element: <ScenarioDetail /> },
     ],
   },
 ];

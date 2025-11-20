@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell } from "recharts";
 
@@ -9,8 +8,6 @@ const HeroScoreCard = ({
   limit = 120000,
   optimizerTip = "Keep utilization below 30% to boost your credit score.",
 }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState("month");
-
   const utilizationData = [
     { name: "Used", value: utilization },
     { name: "Remaining", value: 100 - utilization },
@@ -50,20 +47,9 @@ const HeroScoreCard = ({
         </div>
       </div>
 
-      {/* Period toggles */}
-      <div className="flex justify-center gap-3 mb-5">
-        {["day", "week", "month"].map((p) => (
-          <button
-            key={p}
-            onClick={() => setSelectedPeriod(p)}
-            className={`px-4 py-1 rounded-full text-sm capitalize border transition ${
-              selectedPeriod === p ? "bg-[#2563EB] text-white" : "border-gray-300 text-gray-600"
-            }`}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
+      <h2 className="text-xl font-semibold text-[#2563EB] mb-2 mt-4 pt-5">
+        Utilisation
+      </h2>
 
       {/* Utilization donut */}
       <div className="flex flex-col items-center mb-4">
