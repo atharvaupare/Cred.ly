@@ -11,6 +11,8 @@ import {
 } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 
+import * as api from "../api/index.js";
+
 const Register = () => {
   const navigate = useNavigate();
 
@@ -41,8 +43,7 @@ const Register = () => {
   const inputClass =
     "w-full mt-2 px-4 py-3 pl-12 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 outline-none focus:ring-2 focus:ring-white/40";
 
-  const iconClass =
-    "absolute left-4 top-1/2 -translate-y-1/2 text-white/70 text-lg";
+  const iconClass = "absolute left-4 top-1/2 -translate-y-1/2 text-white/70 text-lg";
 
   // ---------------------------------------------------------
   // SUCCESS POPUP COMPONENT
@@ -59,12 +60,10 @@ const Register = () => {
         <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-3">
           <FiCheck className="text-green-600 text-3xl" />
         </div>
-
         <h3 className="text-xl font-semibold mb-1">Account Created!</h3>
         <p className="text-sm text-gray-600 text-center">
           Your account has been successfully created. Please login to continue.
         </p>
-
         <button
           onClick={() => navigate("/login")}
           className="mt-4 w-full bg-blue-600 text-white rounded-xl py-2 font-semibold hover:bg-blue-700 transition"
@@ -82,40 +81,11 @@ const Register = () => {
     if (submitting) return;
     setSubmitting(true);
     setError("");
-
     try {
-      const res = await fetch("http://localhost:8000/api/onboard", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mobile_number: mobile,
-          income_monthly: Number(income),
-          password: password,
-        }),
-      });
-
-      if (!res.ok) {
-        let payload = {};
-        try {
-          payload = await res.json();
-        } catch {
-          payload = {};
-        }
-        const msg =
-          payload.detail || payload.message || "Failed to create account.";
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      console.log("ONBOARD RESPONSE:", data);
-
-      // Show success popup
+      const data = await api.auth.onboard(mobile, Number(income), password);
+      // onboarding returns token etc. (server responds as your backend does)
       setSuccess(true);
-
-      // Auto navigate after delay
-      setTimeout(() => navigate("/login"), 5000);
+      setTimeout(() => navigate("/login"), 2500);
     } catch (err) {
       console.error(err);
       setError(err.message || "Something went wrong.");
@@ -139,9 +109,7 @@ const Register = () => {
 
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl w-full max-w-md shadow-xl relative z-10 overflow-hidden">
         {/* Title */}
-        <h2 className="text-3xl font-bold text-white text-center mb-4">
-          Create Account
-        </h2>
+        <h2 className="text-3xl font-bold text-white text-center mb-4">Create Account</h2>
 
         {/* Progress Bar */}
         <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden mb-6">
@@ -211,9 +179,7 @@ const Register = () => {
                 transition={{ duration: 0.45, ease: "easeInOut" }}
                 className="absolute w-full"
               >
-                <label className="text-white/90 text-sm">
-                  Monthly Income (INR)
-                </label>
+                <label className="text-white/90 text-sm">Monthly Income (INR)</label>
                 <div className="relative">
                   <FaRupeeSign className={iconClass} />
                   <input
@@ -272,9 +238,7 @@ const Register = () => {
                   />
                 </div>
 
-                <label className="text-white/90 text-sm mt-4 block">
-                  Confirm Password
-                </label>
+                <label className="text-white/90 text-sm mt-4 block">Confirm Password</label>
                 <div className="relative">
                   <FiRefreshCcw className={iconClass} />
                   <input
@@ -297,21 +261,13 @@ const Register = () => {
 
                     <button
                       onClick={() => {
-                        if (
-                          password &&
-                          confirm &&
-                          password === confirm &&
-                          !submitting
-                        ) {
+                        if (password && confirm && password === confirm && !submitting) {
                           handleSubmit();
                         }
                       }}
                       className={`py-2 px-6 rounded-xl font-bold shadow-md transition flex items-center justify-center
                         ${
-                          password &&
-                          confirm &&
-                          password === confirm &&
-                          !submitting
+                          password && confirm && password === confirm && !submitting
                             ? "bg-white text-blue-600 hover:bg-blue-50"
                             : "bg-white/40 text-white/60 cursor-not-allowed"
                         }

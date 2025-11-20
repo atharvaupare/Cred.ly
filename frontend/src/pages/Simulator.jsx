@@ -31,8 +31,9 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import { motion, AnimatePresence } from "framer-motion";
 
-const formatINR = (value) =>
-  "₹ " + Math.round(value ?? 0).toLocaleString("en-IN");
+import * as api from "../api/index.js";
+
+const formatINR = (value) => "₹ " + Math.round(value ?? 0).toLocaleString("en-IN");
 
 // common slider styling (same look as affordability calculator)
 const sliderSx = {
@@ -79,17 +80,10 @@ function UtilCircle({ label, value }) {
           justifyContent: "center",
         }}
       >
-        <Typography
-          variant="caption"
-          component="div"
-          sx={{ fontWeight: 600, fontSize: 12 }}
-        >
+        <Typography variant="caption" component="div" sx={{ fontWeight: 600, fontSize: 12 }}>
           {`${Math.round(value)}%`}
         </Typography>
-        <Typography
-          variant="caption"
-          sx={{ fontSize: 9, color: "text.secondary" }}
-        >
+        <Typography variant="caption" sx={{ fontSize: 9, color: "text.secondary" }}>
           {label}
         </Typography>
       </Box>
@@ -135,16 +129,12 @@ export default function Simulator() {
   }, [profile, currentLimit, currentBalance]);
 
   const oldUtil = useMemo(
-    () =>
-      currentLimit > 0 ? Math.round((currentBalance / currentLimit) * 100) : 0,
+    () => (currentLimit > 0 ? Math.round((currentBalance / currentLimit) * 100) : 0),
     [currentLimit, currentBalance]
   );
 
   const newUtil = useMemo(
-    () =>
-      form.new_limit > 0
-        ? Math.round((form.new_balance / form.new_limit) * 100)
-        : 0,
+    () => (form.new_limit > 0 ? Math.round((form.new_balance / form.new_limit) * 100) : 0),
     [form.new_balance, form.new_limit]
   );
 
@@ -185,30 +175,17 @@ export default function Simulator() {
     setShowResultModal(false);
 
     try {
-      const res = await fetch("http://localhost:8000/api/scenario", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify({
-          mobile_number: mobileNumber,
-          ...form,
-        }),
-      });
+      const payload = {
+        mobile_number: mobileNumber,
+        ...form,
+      };
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        throw new Error(
-          payload.detail || payload.message || "Simulation failed."
-        );
-      }
-
-      const data = await res.json();
+      const data = await api.scenario.run(payload);
       setResult(data);
-      setShowResultModal(true); // auto-open modal when new result is ready
+      setShowResultModal(true);
     } catch (err) {
-      console.error(err);
+      console.error("Simulation error:", err);
+      // optionally show a toast or friendly error
     } finally {
       setLoading(false);
     }
@@ -217,9 +194,7 @@ export default function Simulator() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-blue-100 flex items-center justify-center">
-        <p className="text-sm text-gray-700">
-          Please log in to access the What-If Simulator.
-        </p>
+        <p className="text-sm text-gray-700">Please log in to access the What-If Simulator.</p>
       </div>
     );
   }
@@ -246,9 +221,7 @@ export default function Simulator() {
               className="bg-white rounded-2xl px-6 py-5 shadow-2xl flex flex-col items-center gap-3"
             >
               <CircularProgress />
-              <p className="text-xs text-gray-600">
-                Running what-if simulation…
-              </p>
+              <p className="text-xs text-gray-600">Running what-if simulation…</p>
             </motion.div>
           </motion.div>
         )}
@@ -262,9 +235,7 @@ export default function Simulator() {
         maxWidth="sm"
         PaperProps={{ sx: { borderRadius: "18px" } }}
       >
-        <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>
-          Simulation Result
-        </DialogTitle>
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>Simulation Result</DialogTitle>
         <DialogContent dividers sx={{ pt: 1.5 }}>
           {result && (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -280,10 +251,7 @@ export default function Simulator() {
                 <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
                   Score Impact
                 </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", gap: 1, alignItems: "center" }}
-                >
+                <Typography variant="body2" sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                   {result.new_score >= result.old_score ? (
                     <TrendingUpIcon className="text-green-600" />
                   ) : (
@@ -292,9 +260,7 @@ export default function Simulator() {
                   Old: <strong>{Math.round(result.old_score)}</strong> → New:{" "}
                   <strong
                     className={
-                      result.new_score >= result.old_score
-                        ? "text-green-700"
-                        : "text-red-700"
+                      result.new_score >= result.old_score ? "text-green-700" : "text-red-700"
                     }
                   >
                     {Math.round(result.new_score)}
@@ -312,28 +278,21 @@ export default function Simulator() {
                   Why did my score change?
                 </AccordionSummary>
                 <AccordionDetails>
-                  {result.advice?.why_change ||
-                    "Explanation not available for this scenario."}
+                  {result.advice?.why_change || "Explanation not available for this scenario."}
                 </AccordionDetails>
               </Accordion>
 
               <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  Do’s and Don’ts
-                </AccordionSummary>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Do’s and Don’ts</AccordionSummary>
                 <AccordionDetails>
-                  {result.advice?.do_dont ||
-                    "No specific do/don't advice returned."}
+                  {result.advice?.do_dont || "No specific do/don't advice returned."}
                 </AccordionDetails>
               </Accordion>
 
               <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  Affordability
-                </AccordionSummary>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Affordability</AccordionSummary>
                 <AccordionDetails>
-                  {result.advice?.affordability ||
-                    "Affordability description not available."}
+                  {result.advice?.affordability || "Affordability description not available."}
                 </AccordionDetails>
               </Accordion>
             </Box>
@@ -362,9 +321,7 @@ export default function Simulator() {
           {/* HEADER */}
           <div className="flex flex-col gap-4 justify-between items-start">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                What-If Simulator
-              </h1>
+              <h1 className="text-xl font-semibold text-gray-900">What-If Simulator</h1>
               <p className="text-xs text-gray-500">
                 Adjust your credit behaviour & preview score changes.
               </p>
@@ -375,9 +332,7 @@ export default function Simulator() {
               <Button
                 size="small"
                 variant="outlined"
-                startIcon={
-                  showResultModal ? <VisibilityOffIcon /> : <VisibilityIcon />
-                }
+                startIcon={showResultModal ? <VisibilityOffIcon /> : <VisibilityIcon />}
                 disabled={!result}
                 onClick={() => setShowResultModal((v) => !v)}
                 sx={{ textTransform: "none", fontSize: 11, py: 0.3 }}
@@ -390,12 +345,8 @@ export default function Simulator() {
                 className="bg-blue-50 px-4 py-2 rounded-2xl text-right w-[50%]"
               >
                 <p className="text-[10px] text-gray-500">Current Score</p>
-                <p className="text-lg font-bold text-blue-700">
-                  {Math.round(currentScore ?? 0)}
-                </p>
-                <p className="text-[10px] text-gray-500">
-                  Utilisation: {oldUtil}%
-                </p>
+                <p className="text-lg font-bold text-blue-700">{Math.round(currentScore ?? 0)}</p>
+                <p className="text-[10px] text-gray-500">Utilisation: {oldUtil}%</p>
               </motion.div>
             </div>
           </div>
@@ -444,10 +395,7 @@ export default function Simulator() {
                 mb: 1,
               }}
             >
-              <Typography
-                variant="body2"
-                sx={{ fontSize: 13, fontWeight: 600, color: "grey.700" }}
-              >
+              <Typography variant="body2" sx={{ fontSize: 13, fontWeight: 600, color: "grey.700" }}>
                 New Credit Limit
               </Typography>
               <TextField
@@ -459,9 +407,7 @@ export default function Simulator() {
                   currentLimit ? currentLimit * 2 : 400000
                 )}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">₹</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">₹</InputAdornment>,
                   sx: { "& input": { textAlign: "right", fontSize: 12 } },
                 }}
                 sx={{ width: 140 }}
@@ -509,24 +455,15 @@ export default function Simulator() {
                 mb: 1,
               }}
             >
-              <Typography
-                variant="body2"
-                sx={{ fontSize: 13, fontWeight: 600, color: "grey.700" }}
-              >
+              <Typography variant="body2" sx={{ fontSize: 13, fontWeight: 600, color: "grey.700" }}>
                 New Credit Balance
               </Typography>
               <TextField
                 size="small"
                 value={form.new_balance.toLocaleString("en-IN")}
-                onChange={handleNumericChange(
-                  "new_balance",
-                  0,
-                  form.new_limit || 1
-                )}
+                onChange={handleNumericChange("new_balance", 0, form.new_limit || 1)}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">₹</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">₹</InputAdornment>,
                   sx: { "& input": { textAlign: "right", fontSize: 12 } },
                 }}
                 sx={{ width: 140 }}
@@ -597,9 +534,7 @@ export default function Simulator() {
                   onChange={handleToggle}
                 />
               }
-              label={
-                <span className="text-xs text-gray-700">Missed payment</span>
-              }
+              label={<span className="text-xs text-gray-700">Missed payment</span>}
             />
             <FormControlLabel
               control={

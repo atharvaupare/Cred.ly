@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from "react";
+import * as api from "../api/index.js";
 
 export const AuthContext = createContext(null);
 
@@ -11,64 +12,41 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  // Fetch user profile using token
+  // load profile (and set token in api helper)
   const fetchProfile = async (jwtToken) => {
     try {
       setError("");
+      api.setToken(jwtToken);
 
-      const res = await fetch("http://localhost:8000/api/user/profile", {
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      });
-
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        throw new Error(
-          payload.detail || payload.message || "Failed to fetch profile."
-        );
-      }
-
-      const data = await res.json();
+      // call profile endpoint
+      const data = await api.user.profile();
+      // set user state
       setUser(data);
-      console.log("PROFILE:", data);
       return true;
     } catch (err) {
-      console.error(err);
+      console.error("fetchProfile error:", err);
       setUser(null);
       setToken(null);
+      api.setToken(null);
       localStorage.removeItem("token");
       setError(err.message || "Could not load profile.");
       return false;
     }
   };
 
-  // Login: call /auth/login, save token, fetch profile
   const login = async (mobile_number, password) => {
     try {
       setError("");
-
-      const res = await fetch("http://localhost:8000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile_number, password }),
-      });
-
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        throw new Error(payload.detail || payload.message || "Login failed.");
-      }
-
-      const data = await res.json();
+      const data = await api.auth.login(mobile_number, password);
+      if (!data?.token) throw new Error("No token returned from server.");
       const jwtToken = data.token;
-
       localStorage.setItem("token", jwtToken);
       setToken(jwtToken);
-
+      api.setToken(jwtToken);
       const ok = await fetchProfile(jwtToken);
       return ok;
     } catch (err) {
-      console.error(err);
+      console.error("login error:", err);
       setError(err.message || "Login failed.");
       return false;
     }
@@ -77,20 +55,20 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    api.setToken(null);
     localStorage.removeItem("token");
   };
 
-  // Init from localStorage token
+  // Initialize from localStorage token (single source)
   useEffect(() => {
-    const saved = localStorage.getItem("token");
-    if (!saved) {
-      setInitializing(false);
-      return;
-    }
-
     (async () => {
-      await fetchProfile(saved);
-      setToken(saved);
+      const saved = localStorage.getItem("token");
+      if (!saved) {
+        setInitializing(false);
+        return;
+      }
+      const ok = await fetchProfile(saved);
+      if (ok) setToken(saved);
       setInitializing(false);
     })();
   }, []);
@@ -105,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         error,
         login,
         logout,
+        fetchProfile,
       }}
     >
       {children}
