@@ -1,9 +1,22 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import logo from "../assets/mobile-app.png";
 
 const Landing = () => {
     const navigate = useNavigate();
+
+    // 🔥 Warm backend on landing page load
+    useEffect(() => {
+        const warm = () => {
+            fetch(import.meta.env.VITE_API_URL + "/health")
+                .catch((err) => {
+                    console.log("Backend cold start warming failed", err);
+                });
+        };
+
+        warm();
+    }, []);
 
     return (
         <div className="relative w-screen h-screen overflow-hidden flex flex-col items-center justify-center gap-6 text-center px-6">
@@ -66,13 +79,6 @@ const Landing = () => {
                 >
                     Get Started
                 </button>
-
-                {/* <button
-                    onClick={() => navigate("/login")}
-                    className="w-full py-3 rounded-xl bg-white/20 text-white border border-white/40 backdrop-blur-sm font-semibold hover:bg-white/30 transition"
-                >
-                    Already a user? Log in
-                </button> */}
             </div>
 
             <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/20 to-transparent" />
