@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+// Base URL for backend (Render)
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 let _token = null;
 
@@ -50,21 +51,31 @@ export async function get(path, opts = {}) {
   return handleResponse(res);
 }
 
+
+// ------------------------------
 // High-level API helpers
+// ------------------------------
+
+// LOGIN
 export const auth = {
-  login: (mobile_number, password) => post("/api/auth/login", { mobile_number, password }),
+  login: (mobile_number, password) =>
+    post("/api/auth/login", { mobile_number, password }),
+
   onboard: (mobile_number, income_monthly, password) =>
     post("/api/onboard", { mobile_number, income_monthly, password }),
 };
 
+// USER PROFILE (protected routes)
 export const user = {
   profile: () => get("/api/user/profile"),
 };
 
+// SCENARIO SIMULATION
 export const scenario = {
   run: (payload) => post("/api/scenario", payload),
 };
 
+// CREDIT SCORING (ML + GPT)
 export const credit = {
   score: (features) => post("/api/credit/score", features),
 };
