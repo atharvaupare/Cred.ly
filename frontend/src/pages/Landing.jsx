@@ -9,7 +9,7 @@ const Landing = () => {
     // 🔥 Warm backend on landing page load
     useEffect(() => {
         const warm = () => {
-            fetch(import.meta.env.VITE_API_URL + "/health")
+            fetch(import.meta.env.VITE_API_URL + "/db/health")
                 .catch((err) => {
                     console.log("Backend cold start warming failed", err);
                 });
