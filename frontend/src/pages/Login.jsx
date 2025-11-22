@@ -14,8 +14,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
+  const [mobile, setMobile] = useState("9991112222");
+  const [password, setPassword] = useState("password");
   const [submitting, setSubmitting] = useState(false);
 
   const inputClass =
@@ -70,13 +70,12 @@ const Login = () => {
             <input
               type="text"
               value={mobile}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (/^\d*$/.test(v) && v.length <= 10) setMobile(v);
-              }}
-              inputMode="numeric"
+              readOnly
+              onKeyDown={(e) => e.preventDefault()} // block keyboard input
+              onChange={() => {}} // ignore changes
               placeholder="Mobile Number"
               className={inputClass}
+              style={{ cursor: "not-allowed" }} // optional
             />
           </div>
 
@@ -86,9 +85,12 @@ const Login = () => {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              readOnly
+              onKeyDown={(e) => e.preventDefault()}
+              onChange={() => {}}
               placeholder="Password"
               className={inputClass}
+              style={{ cursor: "not-allowed" }}
             />
           </div>
 
@@ -117,7 +119,7 @@ const Login = () => {
             )}
           </button>
 
-          <p className="text-white/80 text-sm text-center mt-4">
+          {/* <p className="text-white/80 text-sm text-center mt-4">
             Don’t have an account?{" "}
             <span
               onClick={() => navigate("/register")}
@@ -125,7 +127,7 @@ const Login = () => {
             >
               Register
             </span>
-          </p>
+          </p> */}
         </div>
       </motion.div>
     </div>

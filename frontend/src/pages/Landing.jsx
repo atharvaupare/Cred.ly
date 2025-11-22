@@ -61,18 +61,18 @@ const Landing = () => {
             {/* Buttons */}
             <div className="flex flex-col gap-3 w-full max-w-xs z-10 mt-16">
                 <button
-                    onClick={() => navigate("/register")}
+                    onClick={() => navigate("/login")}
                     className="w-full py-3 rounded-xl bg-white text-blue-600 font-semibold shadow-lg hover:bg-blue-50 transition"
                 >
-                    Create Account
+                    Get Started
                 </button>
 
-                <button
+                {/* <button
                     onClick={() => navigate("/login")}
                     className="w-full py-3 rounded-xl bg-white/20 text-white border border-white/40 backdrop-blur-sm font-semibold hover:bg-white/30 transition"
                 >
                     Already a user? Log in
-                </button>
+                </button> */}
             </div>
 
             <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/20 to-transparent" />
