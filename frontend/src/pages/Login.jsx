@@ -134,8 +134,6 @@ const Login = () => {
         </div>
       </motion.div>
 
-      {/* 🎉 Congratulations Modal */}
-
       {showCongrats && (
         <motion.div
           initial={{ opacity: 0 }}
