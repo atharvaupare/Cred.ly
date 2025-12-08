@@ -1,0 +1,1 @@
+curl https://ml-based-credit-scoring-app.onrender.com/db/health

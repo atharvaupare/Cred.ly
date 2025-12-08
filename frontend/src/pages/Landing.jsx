@@ -15,6 +15,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   const [isWarming, setIsWarming] = useState(true);
+  const [hasWarmSuccess, setHasWarmSuccess] = useState(false);
   const [progress, setProgress] = useState(100); // 100 → 0
   const [secondsLeft, setSecondsLeft] = useState(40); // Est time
   const [factIndex, setFactIndex] = useState(0);
@@ -25,14 +26,21 @@ const Landing = () => {
 
     const warm = async () => {
       try {
-        await fetch(import.meta.env.VITE_API_URL + "/db/health", {
+        const res = await fetch(import.meta.env.VITE_API_URL + "/db/health", {
           signal: controller.signal,
         });
+
+        if (res.ok) {
+          // ✅ Health check success – stop loader and show CTA
+          setHasWarmSuccess(true);
+          setIsWarming(false);
+        } else {
+          console.log("Health check failed with status:", res.status);
+          // do NOT stop warming here; let timer handle reload
+        }
       } catch (err) {
         console.log("Backend cold start warming failed", err);
-      } finally {
-        // Allow user to proceed once we get any response
-        setIsWarming(false);
+        // network error: keep warming and let timer decide reload
       }
     };
 
@@ -65,11 +73,16 @@ const Landing = () => {
 
       if (t >= 1) {
         clearInterval(timer);
+
+        // If we still don't have a successful warm, reload and try again
+        if (!hasWarmSuccess) {
+          window.location.reload();
+        }
       }
     }, 300);
 
     return () => clearInterval(timer);
-  }, [isWarming]);
+  }, [isWarming, hasWarmSuccess]);
 
   // 💬 Rotate credit awareness facts while warming
   useEffect(() => {
