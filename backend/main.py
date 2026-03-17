@@ -9,6 +9,7 @@ from routes.onboard import router as onboard_router
 from routes.scenario import router as scenario_router
 from routes.user_profile import router as user_router
 from routes.login import router as login_router
+from routes.advisor_router import router as advisor_router
 
 
 from db import connect_mongo, close_mongo, get_collection, seed_bureau_data
@@ -38,7 +39,7 @@ protected_app.add_middleware(AuthMiddleware)
 # NOTE: do NOT prefix /api again since we mount it at /api
 protected_app.include_router(scenario_router)
 protected_app.include_router(user_router)
-
+protected_app.include_router(advisor_router)
 # Mount protected routes under /api only
 app.mount("/api", protected_app)
 
