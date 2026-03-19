@@ -39,9 +39,7 @@ const Home = () => {
       <div className="absolute bg-gradient-to-b from-[#2563EB] to-[#1D4ED8] w-screen h-[250px] rounded-b-[20%] flex items-start justify-between p-5 z-0">
         <div className="flex flex-col">
           <p className="text-sm font-light">Welcome to</p>
-          <p className="text-xl font-semibold">
-            {profile?.name || "Cred.ly"}
-          </p>
+          <p className="text-xl font-semibold">{profile?.name || "Cred.ly"}</p>
         </div>
         <button className="text-white text-xl bg-white/10 p-2 rounded-full hover:bg-white/20 transition">
           <FaBell />
@@ -56,21 +54,40 @@ const Home = () => {
         optimizerTip={optimizerTip}
       />
 
-      <div className="w-[90%] mt-6">
+      <div className="w-[90%] mt-6 flex flex-col gap-3">
+        {/* Simulator CTA */}
         <button
           onClick={() => navigate("/app/simulator")}
           className="w-full bg-[#2563EB] hover:bg-[#1E3A8A] text-white py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-between"
         >
           <div className="flex flex-col text-left">
             <span className="text-lg font-semibold">
-              Not sure how to improve your score?
+              See what moves the needle! 
             </span>
             <span className="text-sm opacity-90">
               Try our What-If Simulator ⚡
             </span>
           </div>
-          <div className="w-10 h-10 bg-white justify-center items-center rounded-xl ">
+          <div className="w-10 h-10 bg-white flex justify-center items-center rounded-xl">
             <span className="text-2xl text-black">→</span>
+          </div>
+        </button>
+
+        {/* Target Score Advisor CTA */}
+        <button
+          onClick={() => navigate("/app/target-score")}
+          className="w-full bg-white border border-[#2563EB] text-[#2563EB] hover:bg-[#eff6ff] py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-between"
+        >
+          <div className="flex flex-col text-left">
+            <span className="text-lg font-semibold">
+              Have a score goal in mind?
+            </span>
+            <span className="text-sm opacity-70">
+              Use the Target Score Advisor 🎯
+            </span>
+          </div>
+          <div className="w-10 h-10 bg-[#2563EB] flex justify-center items-center rounded-xl">
+            <span className="text-2xl text-white">→</span>
           </div>
         </button>
       </div>

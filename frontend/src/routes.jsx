@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ScenarioHistory from "./pages/ScenarioHistory";
 import ScenarioDetail from "./pages/ScenarioDetail";
+import TargetScoreAdvisor from "./pages/TargetScoreAdvisor";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -30,6 +31,7 @@ const routes = [
       { path: "profile", element: <Profile /> },
       { path: "scenarios", element: <ScenarioHistory /> },
       { path: "scenario/:id", element: <ScenarioDetail /> },
+      { path: "target-score", element: <TargetScoreAdvisor /> },
     ],
   },
 ];

@@ -14,8 +14,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const [mobile] = useState("9991112222");
-  const [password] = useState("password");
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
 
@@ -82,28 +82,26 @@ const Login = () => {
           {/* Mobile */}
           <div className="relative">
             <FiPhone className={iconClass} />
+
             <input
               type="text"
               value={mobile}
-              readOnly
-              onKeyDown={(e) => e.preventDefault()}
+              onChange={(e) => setMobile(e.target.value)}
               placeholder="Mobile Number"
               className={inputClass}
-              style={{ cursor: "not-allowed" }}
             />
           </div>
 
           {/* Password */}
           <div className="relative">
             <FiLock className={iconClass} />
+
             <input
               type="password"
               value={password}
-              readOnly
-              onKeyDown={(e) => e.preventDefault()}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className={inputClass}
-              style={{ cursor: "not-allowed" }}
             />
           </div>
 

@@ -79,3 +79,7 @@ export const scenario = {
 export const credit = {
   score: (features) => post("/api/credit/score", features),
 };
+
+export const advisor = {
+  targetScore: (payload) => post("/api/advisor/target-score", payload),
+};

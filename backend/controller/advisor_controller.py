@@ -90,13 +90,14 @@ Instructions:
 - Keep summary short.
 - key_actions should be specific and actionable.
 - habits_to_avoid should be simple and clear.
+- avoid words like cc_utilization in the advice - use "credit card utilization" instead. same for pl_utilization, use "personal loan utilization".
 
 Return ONLY valid JSON with exactly:
 - achievable (boolean)
 - time_horizon (string)
 - summary (string)
-- key_actions (array of strings)
-- habits_to_avoid (array of strings)
+- key_actions (array of strings) (3 points max)
+- habits_to_avoid (array of strings) (3 points max)
 - utilization_target (string)
 """
 
