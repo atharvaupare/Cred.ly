@@ -154,8 +154,7 @@ const Login = () => {
 
             {/* Subtitle */}
             <p className="text-gray-700 text-sm">
-              Congratulations! You're now logged in as a user with a strong,
-              simulated credit profile.
+              Congratulations! You're now logged in as a user with a simulated credit profile.
             </p>
 
             {/* Progress Bar */}

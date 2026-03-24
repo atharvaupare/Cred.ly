@@ -93,11 +93,11 @@ Instructions:
 - avoid words like cc_utilization in the advice - use "credit card utilization" instead. same for pl_utilization, use "personal loan utilization".
 
 Return ONLY valid JSON with exactly:
-- achievable (boolean)
+- achievable (boolean) be strict with this - if the target score is unrealistic given the profile, say it's not achievable
 - time_horizon (string)
 - summary (string)
-- key_actions (array of strings) (3 points max)
-- habits_to_avoid (array of strings) (3 points max)
+- key_actions (array of strings) (3 points max) be specific based on the profile, credit balance, utilization, and delinquency history. avoid generic advice like "pay on time" - be more specific like "pay ₹5000 towards credit card by next statement to reduce utilization"
+- habits_to_avoid (array of strings) (3 points max) 
 - utilization_target (string)
 """
 
