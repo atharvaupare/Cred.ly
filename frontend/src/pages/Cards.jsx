@@ -45,7 +45,8 @@ const allocateByWeights = (total, weights) => {
   const safeTotal = Math.max(0, Math.round(Number(total) || 0));
   const rawShares = weights.map((weight) => safeTotal * weight);
   const allocations = rawShares.map((share) => Math.floor(share));
-  let remaining = safeTotal - allocations.reduce((sum, value) => sum + value, 0);
+  let remaining =
+    safeTotal - allocations.reduce((sum, value) => sum + value, 0);
 
   rawShares
     .map((share, index) => ({ index, fraction: share - Math.floor(share) }))
@@ -61,8 +62,11 @@ const allocateByWeights = (total, weights) => {
 
 const allocateFromTargets = (total, rawTargets, caps) => {
   const safeTotal = Math.max(0, Math.round(Number(total) || 0));
-  const allocations = rawTargets.map((target) => Math.floor(Math.max(target, 0)));
-  let remaining = safeTotal - allocations.reduce((sum, value) => sum + value, 0);
+  const allocations = rawTargets.map((target) =>
+    Math.floor(Math.max(target, 0)),
+  );
+  let remaining =
+    safeTotal - allocations.reduce((sum, value) => sum + value, 0);
 
   rawTargets
     .map((target, index) => ({
@@ -77,7 +81,9 @@ const allocateFromTargets = (total, rawTargets, caps) => {
       remaining -= 1;
     });
 
-  return allocations.map((value, index) => Math.min(value, caps[index] ?? value));
+  return allocations.map((value, index) =>
+    Math.min(value, caps[index] ?? value),
+  );
 };
 
 const Cards = () => {
@@ -85,9 +91,16 @@ const Cards = () => {
   const { user } = useContext(AuthContext);
   const profile = user?.user_profile;
 
-  const totalLimit = Math.max(0, Math.round(Number(profile?.credit_limit) || 0));
-  const totalBalance = Math.max(0, Math.round(Number(profile?.credit_balance) || 0));
-  const overallUtilization = totalLimit > 0 ? Math.round((totalBalance / totalLimit) * 100) : 0;
+  const totalLimit = Math.max(
+    0,
+    Math.round(Number(profile?.credit_limit) || 0),
+  );
+  const totalBalance = Math.max(
+    0,
+    Math.round(Number(profile?.credit_balance) || 0),
+  );
+  const overallUtilization =
+    totalLimit > 0 ? Math.round((totalBalance / totalLimit) * 100) : 0;
 
   const cards = useMemo(() => {
     const seed = (totalLimit + totalBalance) % LIMIT_WEIGHT_SETS.length;
@@ -96,21 +109,27 @@ const Cards = () => {
     const overallRatio = totalLimit > 0 ? totalBalance / totalLimit : 0;
     const spread = Math.min(overallRatio, 1 - overallRatio, 0.18);
     const [firstShift, secondShift] = UTILIZATION_VARIANTS[seed];
-    const weightShares = limits.map((cardLimit) => (totalLimit > 0 ? cardLimit / totalLimit : 0));
+    const weightShares = limits.map((cardLimit) =>
+      totalLimit > 0 ? cardLimit / totalLimit : 0,
+    );
     const thirdShift =
       weightShares[2] > 0
-        ? -((weightShares[0] * firstShift) + (weightShares[1] * secondShift)) / weightShares[2]
+        ? -(weightShares[0] * firstShift + weightShares[1] * secondShift) /
+          weightShares[2]
         : 0;
     const targetRatios = [firstShift, secondShift, thirdShift].map((shift) =>
-      Math.min(Math.max(overallRatio + (shift * spread), 0), 1)
+      Math.min(Math.max(overallRatio + shift * spread, 0), 1),
     );
-    const rawBalances = limits.map((cardLimit, index) => cardLimit * targetRatios[index]);
+    const rawBalances = limits.map(
+      (cardLimit, index) => cardLimit * targetRatios[index],
+    );
     const balances = allocateFromTargets(totalBalance, rawBalances, limits);
 
     return BANK_CARD_PRESETS.map((preset, index) => {
       const cardLimit = limits[index] || 0;
       const cardBalance = balances[index] || 0;
-      const utilization = cardLimit > 0 ? Math.round((cardBalance / cardLimit) * 100) : 0;
+      const utilization =
+        cardLimit > 0 ? Math.round((cardBalance / cardLimit) * 100) : 0;
 
       return {
         ...preset,
@@ -127,7 +146,8 @@ const Cards = () => {
       <div
         className="px-5 pt-5 pb-8 text-white"
         style={{
-          background: "linear-gradient(160deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%)",
+          background:
+            "linear-gradient(160deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%)",
           borderBottomLeftRadius: "28px",
           borderBottomRightRadius: "28px",
         }}
@@ -143,7 +163,9 @@ const Cards = () => {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-white/70">Card portfolio</p>
-            <h1 className="text-2xl font-bold tracking-tight">Your credit cards</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Your credit cards
+            </h1>
             <p className="mt-2 max-w-[260px] text-sm text-white/75">
               View your balance, limit, and available credit across cards.
             </p>
@@ -156,12 +178,20 @@ const Cards = () => {
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.18em] text-white/60">Total limit</p>
-            <p className="mt-1 text-xl font-semibold">Rs. {totalLimit.toLocaleString()}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+              Total limit
+            </p>
+            <p className="mt-1 text-xl font-semibold">
+              Rs. {totalLimit.toLocaleString()}
+            </p>
           </div>
           <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-            <p className="text-xs uppercase tracking-[0.18em] text-white/60">Total used</p>
-            <p className="mt-1 text-xl font-semibold">Rs. {totalBalance.toLocaleString()}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+              Total used
+            </p>
+            <p className="mt-1 text-xl font-semibold">
+              Rs. {totalBalance.toLocaleString()}
+            </p>
           </div>
         </div>
 
@@ -173,7 +203,9 @@ const Cards = () => {
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
             <div
               className="h-full rounded-full bg-white"
-              style={{ width: `${Math.min(Math.max(overallUtilization, 0), 100)}%` }}
+              style={{
+                width: `${Math.min(Math.max(overallUtilization, 0), 100)}%`,
+              }}
             />
           </div>
         </div>
@@ -181,7 +213,7 @@ const Cards = () => {
 
       <div className="px-5 pt-5">
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-slate-400">
-          Sample cards
+          Your cards
         </p>
 
         <div className="flex flex-col gap-4">
@@ -221,7 +253,9 @@ const Cards = () => {
                     <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">
                       Utilisation
                     </p>
-                    <p className="mt-1 text-lg font-semibold">{card.utilization}%</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {card.utilization}%
+                    </p>
                   </div>
                 </div>
               </div>
@@ -229,13 +263,17 @@ const Cards = () => {
               <div className="p-5">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Balance</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      Balance
+                    </p>
                     <p className="mt-1 text-lg font-semibold text-slate-900">
                       Rs. {card.balance.toLocaleString()}
                     </p>
                   </div>
                   <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Limit</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      Limit
+                    </p>
                     <p className="mt-1 text-lg font-semibold text-slate-900">
                       Rs. {card.limit.toLocaleString()}
                     </p>
