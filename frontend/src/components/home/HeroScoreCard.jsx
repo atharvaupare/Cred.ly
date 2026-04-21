@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { PieChart, Pie, Cell } from "recharts";
 
 const HeroScoreCard = ({
   score = 725,
@@ -8,17 +7,20 @@ const HeroScoreCard = ({
   limit = 120000,
   optimizerTip = "Keep utilization below 30% to boost your credit score.",
 }) => {
-  const utilizationData = [
-    { name: "Used", value: utilization },
-    { name: "Remaining", value: 100 - utilization },
-  ];
+  const numericBalance = Number(balance) || 0;
+  const numericLimit = Number(limit) || 0;
+  const usedPercent = Math.min(Math.max(Number(utilization) || 0, 0), 100);
+  const usedRatio = numericLimit > 0 ? Math.min(numericBalance / numericLimit, 1) : 0;
 
   const getUtilizationColor = (value) => {
-    if (value < 60) return "#22C55E"; // green
-    if (value < 80) return "#FB923C"; // orange
-    return "#EF4444"; // red
+    if (value <= 30) return "#22C55E";
+    if (value <= 50) return "#EAB308";
+    return "#EF4444";
   };
-  const COLORS = [getUtilizationColor(utilization), "#E5E7EB"];
+
+  const utilizationColor = getUtilizationColor(usedPercent);
+  const utilizationLabel =
+    usedPercent <= 30 ? "Low" : usedPercent <= 50 ? "Moderate" : "High";
 
   return (
     <motion.div
@@ -51,35 +53,57 @@ const HeroScoreCard = ({
         Utilisation
       </h2>
 
-      {/* Utilization donut */}
-      <div className="flex flex-col items-center mb-4">
-        <PieChart width={150} height={150}>
-          <Pie
-            data={utilizationData}
-            innerRadius={50}
-            outerRadius={70}
-            paddingAngle={4}
-            dataKey="value"
+      <div className="w-full mb-4">
+        <div className="flex items-end justify-between gap-3 mb-2">
+          <div>
+            <p
+              className="text-lg font-semibold mt-2"
+              style={{ color: utilizationColor }}
+            >
+              {usedPercent}% Used
+            </p>
+            <p className="text-sm text-gray-500">
+              Rs. {numericBalance.toLocaleString()} / Rs. {numericLimit.toLocaleString()}
+            </p>
+          </div>
+          <span
+            className="text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{
+              color: utilizationColor,
+              backgroundColor: `${utilizationColor}1A`,
+            }}
           >
-            {utilizationData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index]} />
-            ))}
-          </Pie>
-        </PieChart>
-        <p
-          className="text-lg font-semibold mt-2"
-          style={{ color: getUtilizationColor(utilization) }}
-        >
-          {utilization}% Used
-        </p>
-        <p className="text-sm text-gray-500">
-          ₹{balance.toLocaleString()} / ₹{limit.toLocaleString()}
-        </p>
+            {utilizationLabel}
+          </span>
+        </div>
+
+        <div className="relative pt-2">
+          <div className="h-4 rounded-full overflow-hidden">
+            <div className="flex h-full w-full">
+              <div className="h-full bg-[#22C55E]" style={{ width: "30%" }} />
+              <div className="h-full bg-[#EAB308]" style={{ width: "20%" }} />
+              <div className="h-full bg-[#EF4444]" style={{ width: "50%" }} />
+            </div>
+          </div>
+
+          <div
+            className="absolute top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-full shadow-sm"
+            style={{
+              left: `calc(${usedRatio * 100}% - 2px)`,
+              backgroundColor: "#111827",
+              boxShadow: "0 0 0 2px rgba(255,255,255,0.9), 0 4px 10px rgba(15,23,42,0.3)",
+            }}
+          />
+        </div>
+
+        <div className="mt-2 flex items-center justify-between text-xs font-medium text-gray-500">
+          <span>Rs. 0</span>
+          <span>Limit: Rs. {numericLimit.toLocaleString()}</span>
+        </div>
       </div>
 
-      {/* Optimizer tip */}
       <div className="bg-blue-50 border-l-4 border-blue-500 px-4 py-3 rounded-lg text-sm text-gray-700">
-        💡 <span className="font-medium">Tip:</span> {optimizerTip}
+        <span className="font-medium">Tip:</span> {optimizerTip}
       </div>
     </motion.div>
   );
